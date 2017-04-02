@@ -1,0 +1,11 @@
+/neuraltalk2-ERNN/coco/
+/neuraltalk2-ERNN/coco-caption/
+/neuraltalk2-ERNN/model/
+.ipynb_checkpoints/
+/neuraltalk2-ERNN/vis/imgs/
+/neuraltalk2-ERNN/vis/vis.json
+*.t7
+*.json
+/.project
+/workdir
+__pycache__
