@@ -147,9 +147,9 @@ function layer:sample(imgs, opt)
 
     local inputs = {xt,unpack(state)}
     local out = self.core:forward(inputs)
-    logprobs = out[self.num_state+1] -- last element is the output vector
+    logprobs = out[1] -- last element is the output vector
     state = {}
-    for i=1,self.num_state do table.insert(state, out[i]) end
+    for i=2,self.num_state+1 do table.insert(state, out[i]) end
   end
 
   -- return the samples and their log likelihoods
@@ -263,9 +263,9 @@ function layer:sample_beam(imgs, opt)
 
       local inputs = {xt,unpack(state)}
       local out = self.core:forward(inputs)
-      logprobs = out[self.num_state+1] -- last element is the output vector
+      logprobs = out[1] -- last element is the output vector
       state = {}
-      for i=1,self.num_state do table.insert(state, out[i]) end
+      for i=2,self.num_state+1 do table.insert(state, out[i]) end
     end
 
     table.sort(done_beams, compare)
@@ -343,9 +343,9 @@ function layer:updateOutput(input)
       -- forward the network
       local out = self.clones[t]:forward(self.inputs[t])
       -- process the outputs
-      self.output[t] = out[self.num_state+1] -- last element is the output vector
+      self.output[t] = out[1] -- last element is the output vector
       self.state[t] = {} -- the rest is state
-      for i=1,self.num_state do table.insert(self.state[t], out[i]) end
+      for i=2,self.num_state+1 do table.insert(self.state[t], out[i]) end
       self.tmax = t
     end
   end
@@ -364,8 +364,8 @@ function layer:updateGradInput(input, gradOutput)
   for t=self.tmax,1,-1 do
     -- concat state gradients and output vector gradients at time step t
     local dout = {}
-    for k=1,#dstate[t] do table.insert(dout, dstate[t][k]) end
     table.insert(dout, gradOutput[t])
+    for k=1,#dstate[t] do table.insert(dout, dstate[t][k]) end
     local dinputs = self.clones[t]:backward(self.inputs[t], dout)
     -- split the gradient to xt and to state
     local dxt = dinputs[1] -- first element is the input vector

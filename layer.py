@@ -12,13 +12,17 @@ class inputLayer:
 
     def genLua(self, node_id, inputs):
         assert len(inputs) == 0, ''
-        return self.template % (node_id, self.layer_id, node_id)
+        return self.template % (node_id, self.layer_id + 1, node_id)
 
 
 class outputLayer:
     n_input = 0
     template = '''  -- outputLayer
   outputs[%d] = node%d
+'''
+    template_out = '''  -- outputLayer(final)
+  node%d = nn.Linear(rnn_size, output_size)(node%d)
+  outputs[%d] = nn.LogSoftMax()(node%d)
 '''
 
     def __init__(self, layer_id):  # layer_id is special for io layers
@@ -29,13 +33,17 @@ class outputLayer:
 
     def genLua(self, node_id, inputs):
         assert len(inputs) == 1, ''
-        return self.template % (self.layer_id, inputs[0])
+        if self.layer_id == 0:
+            return self.template_out % \
+                    (node_id, inputs[0], self.layer_id + 1,  node_id)
+        else:
+            return self.template % (self.layer_id + 1,  inputs[0])
 
 
 class linearLayer:
     n_input = 1
     template = '''  -- linearLayer
-  node%d = nn.Linear(512, 512)(node%d)
+  node%d = nn.Linear(rnn_size, rnn_size)(node%d)
 '''
 
     def __str__(self):

@@ -1,7 +1,11 @@
+import random
 import networkx as nx
 from networkx.algorithms.dag import topological_sort
+from networkx.algorithms.shortest_paths.generic import has_path
 from layer import *
 
+class NotPossibleError(Exception):
+    pass
 
 class network:
     prefix = '''-- automatic generated lua cell
@@ -26,9 +30,22 @@ return cell
         self.n_hidden = n_hidden
         self.score = -1
         self.G = nx.DiGraph()
-        self.G.add_edge(inputLayer(0), outputLayer(n_hidden))
-        for i in range(n_hidden):
-            self.G.add_edge(inputLayer(i + 1), outputLayer(i))
+        for i in range(n_hidden+1):
+            self.G.add_edge(inputLayer(i), outputLayer(i))
+
+    def autoRollback(fn):
+        '''
+        check if the net work is good defined
+        if not rollback and return false
+        '''
+        def wrapper(self, *args, **kwargs):
+            G = self.G.copy()
+            fn(self, *args, **kwargs)
+            ret = self.validate()
+            if not ret:
+                self.G = G
+            return ret
+        return wrapper
 
     def writeLua(self, filename):
         nodes = topological_sort(self.G)
@@ -40,3 +57,116 @@ return cell
                 inputs = [node_ix[i] for i in self.G.predecessors(node)]
                 fd.write(node.genLua(ix, inputs))
             fd.write(self.postfix)
+
+    def randomNode(self, source_node, withInput=False, withOutput=False):
+        '''
+        get a random node which can be a predecessor of node
+        '''
+        node = random.choice(self.G.nodes())
+        for _ in range(10):
+            node = random.choice(self.G.nodes())
+            if node != source_node \
+                    and (withInput or not isinstance(node, inputLayer)) \
+                    and (withOutput or not isinstance(node, outputLayer)) \
+                    and (not source_node or not has_path(self.G, source_node, node)):
+                return node
+        raise NotPossibleError()
+
+
+    def fitNode(self, node):
+        '''
+        remove too many inputs or add too less inputs
+        '''
+        pre = self.G.predecessors(node)
+        while node.n_input > len(pre):
+            cand = self.randomNode(node)
+            self.G.add_edge(cand, node)
+        while node.n_input < len(pre):
+            cand = random.choice(pre)
+            self.G.remove_edge(cand, node)
+
+    def addNodeOnEdge(self, node, edge):
+        '''
+        add a node between two node of edge
+        if node has more than one inputs and random inputs is added
+        '''
+        print('addNodeOnEdge')
+        print(node)
+        print(edge)
+        f = edge[0]
+        t = edge[1]
+        self.G.add_edge(f, node)
+        self.G.add_edge(node, t)
+        self.fitNode(node)
+        self.G.remove_edge(f, t)
+
+    @autoRollback
+    def removeNode(self, node):
+        '''
+        remove a node from G
+        connnect all edge to it to its sucessor
+        '''
+        print('remove')
+        print(node)
+        succ = self.G.successors(node)
+        pre = self.G.predecessors(node)
+        self.G.remove_node(node)
+        for i in succ:
+            self.G.add_edge(random.choice(pre), i)
+            self.fitNode(pre)
+
+    @autoRollback
+    def changeNodeConnect(self, node):
+        '''
+        change connection of a node
+        '''
+        print('change')
+        print(node)
+        pre = self.G.predecessors(node)
+        self.G.remove_edge(random.choice(pre), node)
+        self.fitNode(node)
+
+    @autoRollback
+    def replaceNode(self, node, nnode):
+        '''
+        replace a node with a new one
+        '''
+        print('replace')
+        print(node)
+        print(nnode)
+        succ = self.G.successors(node)
+        pre = self.G.predecessors(node)
+        self.G.remove_node(node)
+        for i in pre:
+            self.G.add_edge(i, nnode)
+        self.fitNode(nnode)
+        for i in succ:
+            self.G.add_edge(nnode, i)
+
+    def validate(self):
+        while True:
+            for node in self.G.nodes():
+                 if self.G.out_degree(node) == 0 and not isinstance(node, outputLayer):
+                     if isinstance(node, inputLayer):
+                         return False
+                     self.G.remove_node(node)
+                     break
+            else:
+                return True
+
+    def simplify(self):
+        '''
+        valdate and simplify network
+        return False if it is a broken net
+        '''
+        while True:
+            for node in self.G.nodes():
+                if isinstance(node, reluLayer) \
+                        and isinstance(node.successors()[0], relyLayer) \
+                        or isinstance(node, linearLayer) \
+                        and isinstance(node.successors()[0], linearLayer):
+                    self.removeNode(node)
+                    break
+            else:
+                return True
+

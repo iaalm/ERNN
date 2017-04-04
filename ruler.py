@@ -3,7 +3,8 @@ import json
 import random
 import pickle
 import fcntl
-from network import network
+from network import network, NotPossibleError
+from layer import *
 
 
 class simpleFileSystemRuler:
@@ -47,6 +48,7 @@ class simpleFileSystemRuler:
         live_path = os.path.join(self.workdir, 'live')
         cands = os.listdir(os.path.join(live_path))
         cand = random.choice(cands)
+        print('born net from ' + cand)
         pickle_path = os.path.join(live_path, cand, 'cell.pickle')
         with open(pickle_path, 'rb') as fd:
             net = pickle.load(fd)
@@ -56,7 +58,7 @@ class simpleFileSystemRuler:
         os.mkdir(npath)
         with open(os.path.join(npath, 'cell.pickle'), 'wb') as fd:
             pickle.dump(net, fd)
-        os.system('cp -lr nerualtalk2-ERNN %s', os.path.join(npath, 'code'))
+        os.system('cp -lr neuraltalk2-ERNN %s' % os.path.join(npath, 'code'))
         net.writeLua(os.path.join(npath, 'code', 'cell.lua'))
 
         return npath
@@ -111,4 +113,45 @@ class simpleFileSystemRuler:
         fcntl.flock(self.lock, fcntl.LOCK_UN)
 
     def mutate(self, net):
+        def randomLayer():
+            layers = ((linearLayer, 1), (reluLayer, 2), (caddLayer, 2), (cmulLayer, 1.5))
+            count = sum([i[1] for i in layers])
+            rv = random.random() * count
+            current_sum = 0
+            for i in layers:
+                current_sum = current_sum + i[1]
+                if current_sum > rv:
+                    return i[0]()
+
+        mutate_weight = [4, 8, 10, 11]
+
+        made = 0
+        changes = 1
+        while made < changes:
+            try:
+                rv = random.randrange(mutate_weight[-1])
+                if rv < mutate_weight[0]:
+                    # add
+                    e = random.choice(net.G.edges())
+                    net.addNodeOnEdge(randomLayer(), e)
+                elif mutate_weight[0] <= rv < mutate_weight[1]:
+                    # replace
+                    node = net.randomNode(None)
+                    if not net.replaceNode(node, randomLayer()):
+                        made = made - 1
+                elif mutate_weight[1] <= rv < mutate_weight[2]:
+                    # change connect
+                    node = net.randomNode(None)
+                    if not net.changeNodeConnect(node):
+                        made = made - 1
+                else:
+                    # remove
+                    node = net.randomNode(None)
+                    if not net.removeNode(node):
+                        made = made - 1
+                made = made + 1
+            except NotPossibleError:
+                print('not possible mutate random')
+                continue
+
         return net
