@@ -11,6 +11,7 @@ require 'misc.DataLoader'
 require 'misc.LanguageModel'
 local net_utils = require 'misc.net_utils'
 require 'misc.optim_updates'
+local threads = require 'threads'
 
 -------------------------------------------------------------------------------
 -- Input arguments and options
@@ -32,7 +33,7 @@ cmd:option('-rnn_size',512,'size of the rnn in number of hidden nodes in each la
 cmd:option('-input_encoding_size',512,'the encoding size of each token in the vocabulary, and the image.')
 
 -- Optimization: General
-cmd:option('-max_iters', 2500, 'max number of iterations to run for (-1 = run forever)')
+cmd:option('-max_iters', 2501, 'max number of iterations to run for (-1 = run forever)')
 cmd:option('-batch_size',80,'what is the batch size in number of images per batch? (there will be x seq_per_img sentences)')
 cmd:option('-siter',1,'effective batch_size = batch_size * siter')
 cmd:option('-grad_clip',0.1,'clip gradients at this value (note should be lower than usual 5 because we normalize grads by both batch and seq_length)')
@@ -88,6 +89,23 @@ end
 -- Create the Data Loader instance
 -------------------------------------------------------------------------------
 local loader = DataLoader{h5_file = opt.input_h5, json_file = opt.input_json}
+local preload_data
+local donkey = threads.Threads(
+  1,
+  function(threadid)
+    require 'misc.DataLoader'
+    loader_donkey = DataLoader{h5_file = opt.input_h5, json_file = opt.input_json}
+  end
+)
+donkey:addjob(
+  function()
+    d = loader_donkey:getBatch{batch_size = opt.batch_size, split = 'train'}
+    return d
+  end,
+  function(d)
+    preload_data = d
+  end
+)
 
 -------------------------------------------------------------------------------
 -- Initialize the networks
@@ -234,7 +252,17 @@ local function lossFun()
   -----------------------------------------------------------------------------
   -- get batch of data  
   sys.tic()
-  local data = loader:getBatch{batch_size = opt.batch_size, split = 'train'}
+  donkey:synchronize()
+  local data = preload_data
+  donkey:addjob(
+    function()
+      d = loader_donkey:getBatch{batch_size = opt.batch_size, split = 'train'}
+      return d
+    end,
+    function(d)
+      preload_data = d
+    end
+  )
   if opt.gpuid >= 0 then data.images = data.images:cuda() end
   local load_time = sys.toc()
   sys.tic()

@@ -86,7 +86,7 @@ class simpleFileSystemRuler:
             print('--[', file=fd)
             print(val_max)
             print('--]', file=fd)
-            with open(os.path.join(path, 'code', 'cell.lua'), 'w') as cell:
+            with open(os.path.join(path, 'code', 'cell.lua'), 'r') as cell:
                 fd.write(cell.read())
 
         live_path = os.path.join(self.workdir, 'live')
