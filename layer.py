@@ -1,6 +1,6 @@
 class inputLayer:
     template = '''  -- inputLayer
-  node%d = nn.Identity()()::annotate('input_%d')
+  node%d = nn.Identity()():annotate{name='input_%d'}
   inputs[%d] = node%d
 '''
 
@@ -18,10 +18,10 @@ class inputLayer:
 class outputLayer:
     n_input = 0
     template = '''  -- outputLayer
-  outputs[%d] = node%d:annotate('output_%d')
+  outputs[%d] = node%d:annotate{name='output_%d'}
 '''
     template_out = '''  -- outputLayer(final)
-  node%d = nn.Linear(rnn_size, output_size)(node%d):annotate('output_final')
+  node%d = nn.Linear(rnn_size, output_size)(node%d):annotate{name='output_final'}
   outputs[%d] = nn.LogSoftMax()(node%d)
 '''
 
