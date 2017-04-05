@@ -195,6 +195,7 @@ local function eval_split(split, evalopt)
     -- fetch a batch of data
     local data = loader:getBatch{batch_size = opt.batch_size, split = split}
     n = n + data.images:size(1)
+    if opt.gpuid >= 0 then data.images = data.images:cuda() end
 
     -- forward the model to get loss
     local logprobs = protos.lm:forward{data.images, data.labels}
@@ -267,7 +268,6 @@ local function lossFun()
       preload_data = d
     end
   )
-  if opt.gpuid >= 0 then data.images = data.images:cuda() end
   local load_time = sys.toc()
   sys.tic()
 
