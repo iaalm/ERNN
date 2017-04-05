@@ -360,6 +360,7 @@ while true do
         print('wrote checkpoint to ' .. checkpoint_path .. '.t7')
       end
     end
+    timer = sys.clock()
   end
 
   -- decay the learning rate for both LM and CNN
