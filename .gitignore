@@ -8,4 +8,5 @@
 *.json
 /.project
 /workdir
+/slurm
 __pycache__

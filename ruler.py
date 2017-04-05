@@ -103,12 +103,16 @@ class simpleFileSystemRuler:
             if data < min_live:
                 min_live = data
                 min_path = mpath
-            if min_live < max_result:
-                os.rmdir(os.path.join(live_path, min_path))
-                os.rmdir(os.path.join(path, 'code'))
-                os.system('mv %s %s', path, live_path)
-            else:
-                os.rmdir(path)
+        if min_live < max_result:
+            print('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
+            os.system('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
+            print('rm -rf %s' % os.path.join(path, 'code'))
+            os.system('rm -rf %s' % os.path.join(path, 'code'))
+            print('mv %s %s' % (path, live_path))
+            os.system('mv %s %s' % (path, live_path))
+        else:
+            print('rm -rf %s' % path)
+            os.system('rm -rf %s' % path)
 
         fcntl.flock(self.lock, fcntl.LOCK_UN)
 
