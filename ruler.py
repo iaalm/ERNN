@@ -82,7 +82,7 @@ class simpleFileSystemRuler:
 
         # write cell.lua
         with open(os.path.join(path, 'cell.lua'), 'w') as fd:
-            print('-- %d' % max_result, file=fd)
+            print('-- %f' % max_result, file=fd)
             print('--[', file=fd)
             print(val_max)
             print('--]', file=fd)
