@@ -180,7 +180,7 @@ collectgarbage() -- "yeah, sure why not"
 -- Validation evaluation
 -------------------------------------------------------------------------------
 local function eval_split(split, evalopt)
-  local verbose = utils.getopt(evalopt, 'verbose', true)
+  local verbose = utils.getopt(evalopt, 'verbose', false)
   local val_images_use = utils.getopt(evalopt, 'val_images_use', true)
 
   protos.lm:evaluate()
@@ -305,7 +305,7 @@ while true do
   local losses = lossFun()
   if iter % opt.losses_log_every == 0 then 
     local t = sys.clock()
-    print(string.format('iter %d: %f | %.3f s / iter', iter, losses.total_loss, (t - timer) / opt.losses_log_every))
+    print(string.format('iter %d: %f | %.3f iters/s', iter, losses.total_loss, opt.losses_log_every / (t - timer)))
     loss_history[iter] = losses.total_loss 
     timer = t
   end
