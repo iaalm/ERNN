@@ -94,12 +94,16 @@ local donkey = threads.Threads(
   1,
   function(threadid)
     require 'misc.DataLoader'
+    require 'cutorch'
     loader_donkey = DataLoader{h5_file = opt.input_h5, json_file = opt.input_json}
+    gpuid = opt.gpuid
+    cutorch.setDevice(gpuid + 1) -- note +1 because lua is 1-indexed
   end
 )
 donkey:addjob(
   function()
     d = loader_donkey:getBatch{batch_size = opt.batch_size, split = 'train'}
+    if gpuid >= 0 then d.images = d.images:cuda() end
     return d
   end,
   function(d)
@@ -191,7 +195,6 @@ local function eval_split(split, evalopt)
     -- fetch a batch of data
     local data = loader:getBatch{batch_size = opt.batch_size, split = split}
     n = n + data.images:size(1)
-  if opt.gpuid >= 0 then data.images = data.images:cuda() end
 
     -- forward the model to get loss
     local logprobs = protos.lm:forward{data.images, data.labels}
@@ -257,6 +260,7 @@ local function lossFun()
   donkey:addjob(
     function()
       d = loader_donkey:getBatch{batch_size = opt.batch_size, split = 'train'}
+      if gpuid >= 0 then d.images = d.images:cuda() end
       return d
     end,
     function(d)
