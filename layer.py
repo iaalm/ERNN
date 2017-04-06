@@ -1,4 +1,5 @@
 class inputLayer:
+    n_input = 0
     template = '''  -- inputLayer
   node%d = nn.Identity()():annotate{name='input_%d'}
   inputs[%d] = node%d
@@ -16,7 +17,7 @@ class inputLayer:
 
 
 class outputLayer:
-    n_input = 0
+    n_input = 1
     template = '''  -- outputLayer
   outputs[%d] = node%d:annotate{name='output_%d'}
 '''
