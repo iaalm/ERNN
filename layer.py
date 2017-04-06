@@ -79,7 +79,7 @@ class caddLayer:
 
     def genLua(self, node_id, inputs):
         assert len(inputs) >= 2, ''
-        return self.template % (node_id, inputs[0])
+        return self.template % (node_id, ','.join(['node%d'%i for i in inputs]))
 
 
 class cmulLayer:
@@ -93,4 +93,4 @@ class cmulLayer:
 
     def genLua(self, node_id, inputs):
         assert len(inputs) >= 2, ''
-        return self.template % (node_id, inputs[0])
+        return self.template % (node_id, ','.join(['node%d'%i for i in inputs]))

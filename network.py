@@ -165,9 +165,9 @@ return cell
         while True:
             for node in self.G.nodes():
                 if isinstance(node, reluLayer) \
-                        and isinstance(self.G.successors(node)[0], reluLayer) \
+                        and isinstance(self.G.predecessors(node)[0], reluLayer) \
                         or isinstance(node, linearLayer) \
-                        and isinstance(self.G.successors(node)[0], linearLayer):
+                        and isinstance(self.G.predecessors(node)[0], linearLayer):
                     print('simplify remove')
                     print(node)
                     self.G.remove_node(node)
