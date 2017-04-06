@@ -168,7 +168,9 @@ return cell
                         and isinstance(self.G.successors(node)[0], reluLayer) \
                         or isinstance(node, linearLayer) \
                         and isinstance(self.G.successors(node)[0], linearLayer):
-                    self.removeNode(node)
+                    print('simplify remove')
+                    print(node)
+                    self.G.remove_node(node)
                     break
             else:
                 return True

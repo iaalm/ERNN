@@ -10,3 +10,4 @@
 /workdir
 /slurm
 __pycache__
+.ropeproject
