@@ -2,6 +2,7 @@ import random
 import networkx as nx
 from networkx.algorithms.dag import topological_sort
 from networkx.algorithms.shortest_paths.generic import has_path
+from networkx.algorithms.swap import connected_double_edge_swap
 from layer import *
 
 class NotPossibleError(Exception):
@@ -77,12 +78,13 @@ return cell
         '''
         remove too many inputs or add too less inputs
         '''
-        pre = self.G.predecessors(node)
-        while node.n_input > len(pre):
-            cand = self.randomNode(node)
+        while node.n_input > len(self.G.predecessors(node)):
+            print('fitNode add')
+            cand = self.randomNode(node, withInput=True)
             self.G.add_edge(cand, node)
-        while node.n_input < len(pre):
-            cand = random.choice(pre)
+        while node.n_input < len(self.G.predecessors(node)):
+            print('fitNode remove')
+            cand = random.choice(self.G.predecessors(node))
             self.G.remove_edge(cand, node)
 
     def addNodeOnEdge(self, node, edge):
@@ -97,8 +99,8 @@ return cell
         t = edge[1]
         self.G.add_edge(f, node)
         self.G.add_edge(node, t)
-        self.fitNode(node)
         self.G.remove_edge(f, t)
+        self.fitNode(node)
 
     @autoRollback
     def removeNode(self, node):
@@ -113,7 +115,7 @@ return cell
         self.G.remove_node(node)
         for i in succ:
             self.G.add_edge(random.choice(pre), i)
-            self.fitNode(pre)
+            self.fitNode(i)
 
     @autoRollback
     def changeNodeConnect(self, node):
@@ -122,6 +124,7 @@ return cell
         '''
         print('change')
         print(node)
+        # connected_double_edge_swap(self.G)
         pre = self.G.predecessors(node)
         self.G.remove_edge(random.choice(pre), node)
         self.fitNode(node)
@@ -139,9 +142,9 @@ return cell
         self.G.remove_node(node)
         for i in pre:
             self.G.add_edge(i, nnode)
-        self.fitNode(nnode)
         for i in succ:
             self.G.add_edge(nnode, i)
+        self.fitNode(nnode)
 
     def validate(self):
         while True:
@@ -162,9 +165,9 @@ return cell
         while True:
             for node in self.G.nodes():
                 if isinstance(node, reluLayer) \
-                        and isinstance(node.successors()[0], relyLayer) \
+                        and isinstance(self.G.successors(node)[0], reluLayer) \
                         or isinstance(node, linearLayer) \
-                        and isinstance(node.successors()[0], linearLayer):
+                        and isinstance(self.G.successors(node)[0], linearLayer):
                     self.removeNode(node)
                     break
             else:

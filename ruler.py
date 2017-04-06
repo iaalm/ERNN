@@ -48,12 +48,13 @@ class simpleFileSystemRuler:
         live_path = os.path.join(self.workdir, 'live')
         cands = os.listdir(os.path.join(live_path))
         cand = random.choice(cands)
-        print('born net from ' + cand)
+        print('------born net from ' + cand)
         pickle_path = os.path.join(live_path, cand, 'cell.pickle')
         with open(pickle_path, 'rb') as fd:
             net = pickle.load(fd)
         net = self.mutate(net)
         nid = self.newId()
+        print('------new id ', nid)
         npath = os.path.join(self.workdir, 'born', nid)
         os.mkdir(npath)
         with open(os.path.join(npath, 'cell.pickle'), 'wb') as fd:
@@ -127,7 +128,7 @@ class simpleFileSystemRuler:
                 if current_sum > rv:
                     return i[0]()
 
-        mutate_weight = [4, 8, 10, 11]
+        mutate_weight = [3, 5, 10, 13]
 
         made = 0
         changes = 1
@@ -142,20 +143,23 @@ class simpleFileSystemRuler:
                     # replace
                     node = net.randomNode(None)
                     if not net.replaceNode(node, randomLayer()):
+                        print('mutate fail')
                         made = made - 1
                 elif mutate_weight[1] <= rv < mutate_weight[2]:
                     # change connect
-                    node = net.randomNode(None)
+                    node = net.randomNode(None, withOutput=True)
                     if not net.changeNodeConnect(node):
+                        print('mutate fail')
                         made = made - 1
                 else:
                     # remove
                     node = net.randomNode(None)
                     if not net.removeNode(node):
+                        print('mutate fail')
                         made = made - 1
                 made = made + 1
             except NotPossibleError:
                 print('not possible mutate random')
                 continue
-
+        net.simplify()
         return net
