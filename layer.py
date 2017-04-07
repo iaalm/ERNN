@@ -55,6 +55,48 @@ class linearLayer:
         return self.template % (node_id, inputs[0])
 
 
+class dropoutLayer:
+    n_input = 1
+    template = '''  -- reluLayer
+  node%d = nn.Dropout(0.5)(node%d)
+'''
+
+    def __str__(self):
+        return 'dropoutLayer'
+
+    def genLua(self, node_id, inputs):
+        assert len(inputs) == 1, 'dropout layer %d / 1' % len(inputs)
+        return self.template % (node_id, inputs[0])
+
+
+class sigmoidLayer:
+    n_input = 1
+    template = '''  -- reluLayer
+  node%d = nn.Sigmoid()(node%d)
+'''
+
+    def __str__(self):
+        return 'sigmoidLayer'
+
+    def genLua(self, node_id, inputs):
+        assert len(inputs) == 1, 'sigmoid layer %d / 1' % len(inputs)
+        return self.template % (node_id, inputs[0])
+
+
+class tanhLayer:
+    n_input = 1
+    template = '''  -- reluLayer
+  node%d = nn.Tanh()(node%d)
+'''
+
+    def __str__(self):
+        return 'tanhLayer'
+
+    def genLua(self, node_id, inputs):
+        assert len(inputs) == 1, 'tanh layer %d / 1' % len(inputs)
+        return self.template % (node_id, inputs[0])
+
+
 class reluLayer:
     n_input = 1
     template = '''  -- reluLayer

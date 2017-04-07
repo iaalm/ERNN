@@ -51,7 +51,7 @@ cmd:option('-val_images_use', 3200, 'how many images to use when periodically ev
 cmd:option('-save_checkpoint_every', 2500, 'how often to save a model checkpoint?')
 cmd:option('-checkpoint_path', '', 'folder to save checkpoints into (empty = this folder)')
 cmd:option('-language_eval', 1, 'Evaluate language as well (1 = yes, 0 = no)? BLEU/CIDEr/METEOR/ROUGE_L? requires coco-caption code from Github.')
-cmd:option('-losses_log_every', 100, 'How often do we snapshot losses, for inclusion in the progress dump? (0 = disable)')
+cmd:option('-losses_log_every', 500, 'How often do we snapshot losses, for inclusion in the progress dump? (0 = disable)')
 cmd:option('-load_best_score', 0, 'Do we load best score from the save file.')
 
 -- misc
@@ -305,7 +305,7 @@ while true do
   local losses = lossFun()
   if iter % opt.losses_log_every == 0 then 
     local t = sys.clock()
-    print(string.format('iter %d: %f | %.3f iters/s', iter, losses.total_loss, opt.losses_log_every / (t - timer)))
+    print(string.format('iter %7d: %f | %.3f iters/s', iter, losses.total_loss, opt.losses_log_every / (t - timer)))
     loss_history[iter] = losses.total_loss 
     timer = t
   end

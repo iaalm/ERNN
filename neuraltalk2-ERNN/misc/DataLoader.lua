@@ -6,14 +6,11 @@ local DataLoader = torch.class('DataLoader')
 function DataLoader:__init(opt)
   
   -- load the json file which contains additional information about the dataset
-  print('DataLoader loading json file: ', opt.json_file)
   self.info = utils.read_json(opt.json_file)
   self.ix_to_word = self.info.ix_to_word
   self.vocab_size = utils.count_keys(self.ix_to_word)
-  print('vocab size is ' .. self.vocab_size)
   
   -- open the hdf5 file
-  print('DataLoader loading h5 file: ', opt.h5_file)
   self.h5_file = hdf5.open(opt.h5_file, 'r')
   
   -- extract image size from dataset
@@ -21,12 +18,10 @@ function DataLoader:__init(opt)
   assert(#images_size == 2, '/images should be a 4D tensor')
   self.num_images = images_size[1]
   self.num_channels = images_size[2]
-  print(string.format('read %d images of size %d', self.num_images, self.num_channels))
 
   -- load in the sequence data
   local seq_size = self.h5_file:read('/labels'):dataspaceSize()
   self.seq_length = seq_size[2]
-  print('max sequence length in data is ' .. self.seq_length)
   -- load the pointers in full to RAM (should be small enough)
   self.label_start_ix = self.h5_file:read('/label_start_ix'):all()
   self.label_end_ix = self.h5_file:read('/label_end_ix'):all()
@@ -42,9 +37,6 @@ function DataLoader:__init(opt)
       self.iterators[split] = 1
     end
     table.insert(self.split_ix[split], i)
-  end
-  for k,v in pairs(self.split_ix) do
-    print(string.format('assigned %d images to split %s', #v, k))
   end
 end
 

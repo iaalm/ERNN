@@ -104,7 +104,7 @@ class simpleFileSystemRuler:
             if data < min_live:
                 min_live = data
                 min_path = mpath
-        if min_live < max_result:
+        if min_live <= max_result:
             print('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
             os.system('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
             print('rm -rf %s' % os.path.join(path, 'code'))
@@ -119,7 +119,13 @@ class simpleFileSystemRuler:
 
     def mutate(self, net):
         def randomLayer():
-            layers = ((linearLayer, 1), (reluLayer, 2), (caddLayer, 2), (cmulLayer, 1.5))
+            layers = ((linearLayer, 1),
+                      (reluLayer, 2),
+                      (dropoutLayer, 2),
+                      (sigmoidLayer, 1),
+                      (tanhLayer, 1),
+                      (caddLayer, 2),
+                      (cmulLayer, 1.5))
             count = sum([i[1] for i in layers])
             rv = random.random() * count
             current_sum = 0
@@ -131,7 +137,7 @@ class simpleFileSystemRuler:
         mutate_weight = [3, 5, 10, 13]
 
         made = 0
-        changes = 1
+        changes = 1 + int(random.expovariate(1))
         while made < changes:
             try:
                 rv = random.randrange(mutate_weight[-1])
