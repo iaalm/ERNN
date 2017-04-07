@@ -5,12 +5,15 @@ import pickle
 import fcntl
 from network import network, NotPossibleError
 from layer import *
+from tensorboard_logger import configure, log_value
 
 
 class simpleFileSystemRuler:
     def __init__(self, workdir, n_live, n_hidden):
         self.workdir = workdir
         self.n_hidden = n_hidden
+
+        configure("logs")
 
         dirs = os.listdir(workdir)
         for i in ['live', 'dead', 'born']:
@@ -80,7 +83,7 @@ class simpleFileSystemRuler:
                 for metric in v:
                     val_max[metric] = v[metric]
                 val_max['pos_max'] = k
-
+        log_value('performance', v['CIDEr'], int(os.path.basename(path)))
         # write cell.lua
         with open(os.path.join(path, 'cell.lua'), 'w') as fd:
             print('-- %f' % max_result, file=fd)
@@ -92,8 +95,6 @@ class simpleFileSystemRuler:
 
         live_path = os.path.join(self.workdir, 'live')
         fcntl.flock(self.lock, fcntl.LOCK_EX)
-        min_live = 10000000
-        min_path = None
         p = random.choice(os.listdir(live_path))
         mpath = os.path.join(live_path, p)
         with open(os.path.join(mpath, 'cell.lua')) as fd:
@@ -101,9 +102,8 @@ class simpleFileSystemRuler:
                 data = float(fd.readline().split(' ')[1].strip())
             except ValueError:
                 data = -1
-        if data < min_live:
-            min_live = data
-            min_path = mpath
+        min_live = data
+        min_path = mpath
         if min_live <= max_result:
             print('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
             os.system('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
