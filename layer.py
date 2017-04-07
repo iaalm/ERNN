@@ -12,7 +12,7 @@ class inputLayer:
         return 'inputLayer'
 
     def genLua(self, node_id, inputs):
-        assert len(inputs) == 0, ''
+        assert len(inputs) == 0, 'input layer %d / 0' % len(inputs)
         return self.template % (node_id, self.layer_id + 1, self.layer_id + 1, node_id)
 
 
@@ -33,7 +33,7 @@ class outputLayer:
         return 'outputLayer'
 
     def genLua(self, node_id, inputs):
-        assert len(inputs) == 1, ''
+        assert len(inputs) == 1, 'output layer %d / 1' % len(inputs)
         if self.layer_id == 0:
             return self.template_out % \
                     (node_id, inputs[0], self.layer_id + 1,  node_id)
@@ -51,7 +51,7 @@ class linearLayer:
         return 'linearLayer'
 
     def genLua(self, node_id, inputs):
-        assert len(inputs) == 1, ''
+        assert len(inputs) == 1, 'linear layer %d / 1' % len(inputs)
         return self.template % (node_id, inputs[0])
 
 
@@ -65,7 +65,7 @@ class reluLayer:
         return 'reluLayer'
 
     def genLua(self, node_id, inputs):
-        assert len(inputs) == 1, ''
+        assert len(inputs) == 1, 'relu layer %d / 1' % len(inputs)
         return self.template % (node_id, inputs[0])
 
 
@@ -79,7 +79,7 @@ class caddLayer:
         return 'caddLayer'
 
     def genLua(self, node_id, inputs):
-        assert len(inputs) >= 2, ''
+        assert len(inputs) == 2, 'cadd layer %d / 2' % len(inputs)
         return self.template % (node_id, ','.join(['node%d'%i for i in inputs]))
 
 
@@ -93,5 +93,5 @@ class cmulLayer:
         return 'cmulLayer'
 
     def genLua(self, node_id, inputs):
-        assert len(inputs) >= 2, ''
+        assert len(inputs) == 2, 'cmul layer %d / 2' % len(inputs)
         return self.template % (node_id, ','.join(['node%d'%i for i in inputs]))

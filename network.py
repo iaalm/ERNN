@@ -152,8 +152,8 @@ return cell
                  if self.G.out_degree(node) == 0 and not isinstance(node, outputLayer):
                      if isinstance(node, inputLayer):
                          return False
-                     self.G.add_edge(sel.G.predecessors(node)[0],
-                             self.G.successors(node)[0])
+                     #self.G.add_edge(self.G.predecessors(node)[0],
+                     #        self.G.successors(node)[0])
                      self.G.remove_node(node)
                      break
             else:
@@ -172,6 +172,7 @@ return cell
                         and isinstance(self.G.predecessors(node)[0], linearLayer):
                     print('simplify remove')
                     print(node)
+                    self.G.add_edge(self.G.predecessors(node)[0], self.G.successors(node)[0])
                     self.G.remove_node(node)
                     break
             else:

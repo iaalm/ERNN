@@ -6,7 +6,7 @@ from ruler import simpleFileSystemRuler
 
 if __name__ == '__main__':
     random.seed(123)
-    ruler = simpleFileSystemRuler('workdir', 100, 2)
+    ruler = simpleFileSystemRuler('workdir', 10, 2)
     while True:
         path = ruler.born()
         os.system('cd %s/code ; th train.lua' % path)
