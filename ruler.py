@@ -94,16 +94,16 @@ class simpleFileSystemRuler:
         fcntl.flock(self.lock, fcntl.LOCK_EX)
         min_live = 10000000
         min_path = None
-        for p in os.listdir(live_path):
-            mpath = os.path.join(live_path, p)
-            with open(os.path.join(mpath, 'cell.lua')) as fd:
-                try:
-                    data = float(fd.readline().split(' ')[1].strip())
-                except ValueError:
-                    data = -1
-            if data < min_live:
-                min_live = data
-                min_path = mpath
+        p = random.choice(os.listdir(live_path))
+        mpath = os.path.join(live_path, p)
+        with open(os.path.join(mpath, 'cell.lua')) as fd:
+            try:
+                data = float(fd.readline().split(' ')[1].strip())
+            except ValueError:
+                data = -1
+        if data < min_live:
+            min_live = data
+            min_path = mpath
         if min_live <= max_result:
             print('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
             os.system('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
