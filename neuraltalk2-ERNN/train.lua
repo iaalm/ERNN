@@ -160,7 +160,7 @@ end
 -- flatten and prepare all model parameters to a single vector. 
 -- Keep CNN params separate in case we want to try to get fancy with different optims on LM/CNN
 local params, grad_params = protos.lm:getParameters()
-print('total number of parameters in LM: ', params:nElement())
+print('number of parameters:', params:nElement())
 assert(params:nElement() == grad_params:nElement())
 
 -- construct thin module clones that share parameters with the actual
