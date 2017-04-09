@@ -5,7 +5,7 @@ import pickle
 import fcntl
 from network import network, NotPossibleError
 from layer import *
-from tensorboard_logger import configure, log_value
+# from tensorboard_logger import configure, log_value
 
 
 class simpleFileSystemRuler:
@@ -13,7 +13,7 @@ class simpleFileSystemRuler:
         self.workdir = workdir
         self.n_hidden = n_hidden
 
-        configure("logs")
+        # configure("logs")
 
         dirs = os.listdir(workdir)
         for i in ['live', 'dead', 'born']:
@@ -83,7 +83,7 @@ class simpleFileSystemRuler:
                 for metric in v:
                     val_max[metric] = v[metric]
                 val_max['pos_max'] = k
-        log_value('performance', v['CIDEr'], int(os.path.basename(path)))
+        # log_value('performance', v['CIDEr'], int(os.path.basename(path)))
         # write cell.lua
         with open(os.path.join(path, 'cell.lua'), 'w') as fd:
             print('-- %f' % max_result, file=fd)

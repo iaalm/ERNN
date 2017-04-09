@@ -7,7 +7,9 @@
 *.t7
 *.json
 /.project
-/workdir
+/workdir*
 /slurm
 __pycache__
 .ropeproject
+*.pyc
+/logs
