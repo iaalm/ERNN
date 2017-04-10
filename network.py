@@ -59,6 +59,16 @@ return cell
                 fd.write(node.genLua(ix, inputs))
             fd.write(self.postfix)
 
+    def getLua(self):
+        result = ''
+        nodes = topological_sort(self.G)
+        node_ix = {node: ix for ix, node in enumerate(nodes)}
+        # write to file
+        for ix, node in enumerate(nodes):
+            inputs = [node_ix[i] for i in self.G.predecessors(node)]
+            result = result + "\n" + node.genLua(ix, inputs)
+        return self.prefix + result + self.postfix
+
     def randomNode(self, source_node, withInput=False, withOutput=False):
         '''
         get a random node which can be a predecessor of node

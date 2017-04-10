@@ -23,8 +23,8 @@ cmd:text()
 cmd:text('Options')
 
 -- Data input settings
-cmd:option('-input_h5','/s/ERNN/coco/cocosent.h5','path to the h5file containing the preprocessed dataset')
-cmd:option('-input_json','/s/ERNN/coco/cocotalk.json','path to the json file containing additional info and vocab')
+cmd:option('-input_h5','coco/cocosent.h5','path to the h5file containing the preprocessed dataset')
+cmd:option('-input_json','coco/cocotalk.json','path to the json file containing additional info and vocab')
 cmd:option('-input_val','annotations/captions_val2014.json','path to the json file containing caption for val')
 cmd:option('-start_from', '', 'path to a model checkpoint to initialize model weights from. Empty = don\'t')
 
