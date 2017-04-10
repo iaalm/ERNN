@@ -3,8 +3,6 @@ require 'torch'
 require 'nn'
 require 'sys'
 require 'nngraph'
--- exotic things
-require 'loadcaffe'
 -- local imports
 local utils = require 'misc.utils'
 require 'misc.DataLoader'

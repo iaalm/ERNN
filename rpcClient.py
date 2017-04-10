@@ -38,7 +38,7 @@ def rpcWorker(url, gpuid):
             val_data = data["val_lang_stats_history"]
             val_data = sorted(val_data.items(), key=lambda t: int(t[0]))
 
-            max_result = 0
+            max_result = -1
             for k, v in val_data:
                 if v['CIDEr'] > max_result:
                     max_result = v['CIDEr']

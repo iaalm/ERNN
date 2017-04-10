@@ -78,7 +78,7 @@ class simpleFileSystemRuler:
         val_data = data["val_lang_stats_history"]
         val_data = sorted(val_data.items(), key=lambda t: int(t[0]))
 
-        max_result = 0
+        max_result = -1
         val_max = {}
         for k, v in val_data:
             if v['CIDEr'] > max_result:
@@ -230,7 +230,7 @@ class rpcFileSystemRuler:
         nx.draw(net)
         plt.savefig(os.path.join(path, 'cell.png'))
         max_result = metric['CIDEr']
-        log_value('performance', v['CIDEr'], int(os.path.basename(path)))
+        log_value('performance', metric['CIDEr'], int(nid))
         with open(os.path.join(path, 'cell.lua'), 'w') as fd:
             print('-- %f' % max_result, file=fd)
             print('--[', file=fd)
@@ -240,7 +240,7 @@ class rpcFileSystemRuler:
         live_path = os.path.join(self.workdir, 'live')
         p = random.choice(os.listdir(live_path))
         min_path = os.path.join(live_path, p)
-        with open(os.path.join(mpath, 'cell.lua')) as fd:
+        with open(os.path.join(min_path, 'cell.lua')) as fd:
             try:
                 min_live = float(fd.readline().split(' ')[1].strip())
             except ValueError:
@@ -254,6 +254,7 @@ class rpcFileSystemRuler:
         else:
             print('rm -rf %s' % path)
             os.system('rm -rf %s' % path)
+        return True
 
     def mutate(self, net):
         def randomLayer():
