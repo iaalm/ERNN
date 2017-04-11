@@ -13,3 +13,4 @@ __pycache__
 .ropeproject
 *.pyc
 /logs
+/work_?
