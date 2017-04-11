@@ -226,9 +226,9 @@ class rpcFileSystemRuler:
         path = os.path.join(self.workdir, 'born', nid)
         with open(os.path.join(path, 'cell.pickle'), 'rb') as fd:
             net = pickle.load(fd)
-        plt.clf()
-        nx.draw(net)
-        plt.savefig(os.path.join(path, 'cell.png'))
+        # plt.clf()
+        # nx.draw(net.G)
+        # plt.savefig(os.path.join(path, 'cell.png'))
         max_result = metric['CIDEr']
         log_value('performance', metric['CIDEr'], int(nid))
         with open(os.path.join(path, 'cell.lua'), 'w') as fd:
