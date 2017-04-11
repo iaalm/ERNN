@@ -78,7 +78,7 @@ class simpleFileSystemRuler:
         val_data = data["val_lang_stats_history"]
         val_data = sorted(val_data.items(), key=lambda t: int(t[0]))
 
-        max_result = -1
+        max_result = -0.01
         val_max = {}
         for k, v in val_data:
             if v['CIDEr'] > max_result:
@@ -104,7 +104,7 @@ class simpleFileSystemRuler:
             try:
                 data = float(fd.readline().split(' ')[1].strip())
             except ValueError:
-                data = -1
+                data = -0.01
         min_live = data
         min_path = mpath
         if min_live <= max_result:
@@ -244,7 +244,7 @@ class rpcFileSystemRuler:
             try:
                 min_live = float(fd.readline().split(' ')[1].strip())
             except ValueError:
-                min_live = -1
+                min_live = -0.01
         if min_live <= max_result:
             print('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
             os.system('mv %s %s' %
