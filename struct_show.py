@@ -2,6 +2,7 @@
 
 import os
 import pickle
+import random
 import argparse
 import networkx as nx
 from layer import inputLayer, outputLayer
@@ -17,14 +18,19 @@ with open(os.path.join(args.dir, 'cell.pickle'), 'rb') as fd:
     net = pickle.load(fd)
 
 fixed_positions = {}
+fixed_nodes = []
 for node in net.G.nodes():
     if isinstance(node, inputLayer):
         fixed_positions[node] = (0, node.layer_id)
-    if isinstance(node, outputLayer):
+        fixed_nodes.append(node)
+    elif isinstance(node, outputLayer):
         fixed_positions[node] = (1, node.layer_id)
+        fixed_nodes.append(node)
+    else:
+        fixed_positions[node] = (0.5, random.random())
 
-fixed_nodes = fixed_positions.keys()
-pos = nx.spring_layout(net.G, pos=fixed_positions, fixed=fixed_nodes)
+# pos = nx.spring_layout(net.G, pos=fixed_positions, fixed=fixed_nodes)
+pos = nx.spring_layout(net.G)
 nx.draw(net.G, pos)
 plt.text(0, 0, score)
 
