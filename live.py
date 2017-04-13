@@ -15,10 +15,16 @@ for sub in ['live', 'dead']:
         with open(os.path.join(args.dir, sub, i, 'cell.lua')) as fd:
             performance = fd.readline().split()[1].strip()
             try:
-                result.append((int(i), float(performance)))
+                performance = float(performance)
+                if performance < 0:
+                    continue
+                result.append((int(i), performance))
             except:
-                print(i, 'error')
+                pass
+                # print(i, 'error')
 result = sorted(result, key=lambda x: x[0])
 plt.plot([i[1] for i in result], '.')
+print(max([i[1] for i in result]))
+print(sorted(result, key=lambda x: x[1])[-1])
 
 plt.show()

@@ -266,7 +266,7 @@ class rpcFileSystemRuler:
                 if current_sum > rv:
                     return i[0]()
 
-        mutate_weight = [3, 5, 10, 13]
+        mutate_weight = [5, 7, 12, 13]
 
         made = 0
         changes = 1 + int(random.expovariate(1))
