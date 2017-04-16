@@ -9,7 +9,7 @@ class inputLayer:
         self.layer_id = layer_id
 
     def __str__(self):
-        return 'inputLayer'
+        return 'inputLayer-%d' % self.layer_id
 
     def genLua(self, node_id, inputs):
         assert len(inputs) == 0, 'input layer %d / 0' % len(inputs)
@@ -30,7 +30,7 @@ class outputLayer:
         self.layer_id = layer_id
 
     def __str__(self):
-        return 'outputLayer'
+        return 'outputLayer-%d' % self.layer_id
 
     def genLua(self, node_id, inputs):
         assert len(inputs) == 1, 'output layer %d / 1' % len(inputs)

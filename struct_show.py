@@ -31,7 +31,7 @@ for node in net.G.nodes():
 
 # pos = nx.spring_layout(net.G, pos=fixed_positions, fixed=fixed_nodes)
 pos = nx.spring_layout(net.G)
-nx.draw(net.G, pos)
+nx.draw(net.G)
 plt.text(0, 0, score)
 
 plt.show()
