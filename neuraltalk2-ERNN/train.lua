@@ -31,7 +31,7 @@ cmd:option('-rnn_size',512,'size of the rnn in number of hidden nodes in each la
 cmd:option('-input_encoding_size',512,'the encoding size of each token in the vocabulary, and the image.')
 
 -- Optimization: General
-cmd:option('-max_iters', 10001, 'max number of iterations to run for (-1 = run forever)')
+cmd:option('-max_iters', 12501, 'max number of iterations to run for (-1 = run forever)')
 cmd:option('-batch_size',80,'what is the batch size in number of images per batch? (there will be x seq_per_img sentences)')
 cmd:option('-siter',1,'effective batch_size = batch_size * siter')
 cmd:option('-grad_clip',0.1,'clip gradients at this value (note should be lower than usual 5 because we normalize grads by both batch and seq_length)')
@@ -340,6 +340,10 @@ while true do
     if lang_stats then
       -- use CIDEr score for deciding how well we did
       current_score = lang_stats['CIDEr']
+      if current_score < 0.3 then
+         print('result too bad')
+         break
+      end
     else
       -- use the (negative) validation loss as a score
       current_score = -val_loss
@@ -391,10 +395,10 @@ while true do
   iter = iter + 1
   if iter % 10 == 0 then collectgarbage() end -- good idea to do this once in a while, i think
   if loss0 == nil then loss0 = losses.total_loss end
-  if losses.total_loss > loss0 * 20 and losses.total_loss ~= losses.total_loss then -- loss ~= loss for nan
+  if losses.total_loss > 100 or losses.total_loss ~= losses.total_loss then -- loss ~= loss for nan
     print('loss seems to be exploding, quitting.')
     break
   end
-  if opt.max_iters > 0 and iter >= opt.max_iters then break end -- stopping criterion
+  if opt.max_iters > 0 and iter > opt.max_iters then break end -- stopping criterion
 
 end

@@ -12,7 +12,6 @@ parser.add_argument("--url",
 parser.add_argument('--gpuid', default=0,  help="gpuid")
 args = parser.parse_args()
 
-
 def rpcWorker(url, gpuid):
     s = xmlrpc.client.ServerProxy(url)
     if not os.path.exists('work_%d' % gpuid):
@@ -25,11 +24,13 @@ def rpcWorker(url, gpuid):
         except:
             continue
         try:
+            val_max = {'CIDEr': -1}
             nid, lua_code = ret['id'], ret['lua']
             print('nid', nid)
             with open('cell.lua', 'w') as fd:
                 fd.write(lua_code)
 
+            os.system('rm model_.json')
             os.system('CUDA_VISIBLE_DEVICES=%d th train.lua' % gpuid)
 
             with open('model_.json') as fd:
@@ -53,7 +54,7 @@ def rpcWorker(url, gpuid):
                 print('return now')
                 break
         finally:
-            s.fight(nid, {'CIDEr': -1})
+            s.fight(nid, val_max)
 
 if __name__ == '__main__':
     rpcWorker(args.url, int(args.gpuid))
