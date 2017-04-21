@@ -31,7 +31,7 @@ cmd:option('-rnn_size',512,'size of the rnn in number of hidden nodes in each la
 cmd:option('-input_encoding_size',512,'the encoding size of each token in the vocabulary, and the image.')
 
 -- Optimization: General
-cmd:option('-max_iters', 12501, 'max number of iterations to run for (-1 = run forever)')
+cmd:option('-max_iters', 15001, 'max number of iterations to run for (-1 = run forever)')
 cmd:option('-batch_size',80,'what is the batch size in number of images per batch? (there will be x seq_per_img sentences)')
 cmd:option('-siter',1,'effective batch_size = batch_size * siter')
 cmd:option('-grad_clip',0.1,'clip gradients at this value (note should be lower than usual 5 because we normalize grads by both batch and seq_length)')
@@ -146,6 +146,7 @@ else
   lmOpt.rnn_type = opt.rnn_type
   lmOpt.res_rnn = opt.res_rnn
   protos.lm = nn.LanguageModel(lmOpt)
+  if opt.backend == 'cudnn' then cudnn.convert(protos.lm, cudnn) end
   -- criterion for the language model
   protos.crit = nn.LanguageModelCriterion()
 end
