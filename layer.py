@@ -19,7 +19,7 @@ class inputLayer:
 class outputLayer:
     n_input = 1
     template = '''  -- outputLayer
-  outputs[%d] = node%d:annotate{name='output_%d'}
+  outputs[%d] = nn.Identity()(node%d):annotate{name='output_%d'}
 '''
     template_out = '''  -- outputLayer(final)
   node%d = nn.Linear(rnn_size, output_size)(node%d):annotate{name='output_final'}

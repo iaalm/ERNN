@@ -11,5 +11,5 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     random.seed(123)
-    ruler = rpcFileSystemRuler(args.dir, 10, 2)
+    ruler = rpcFileSystemRuler(args.dir, 100, 4)
     ruler.listen(int(args.port))

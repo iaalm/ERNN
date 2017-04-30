@@ -9,6 +9,7 @@ class NotPossibleError(Exception):
     pass
 
 class network:
+
     prefix = '''-- automatic generated lua cell
 require 'nn'
 require 'nngraph'
@@ -29,10 +30,16 @@ return cell
     def __init__(self, n_hidden):
         self.parent_path = []
         self.n_hidden = n_hidden
-        self.score = -1
+        self.score = -0.01
         self.G = nx.DiGraph()
+        before = inputLayer(0)
+        for i in range(1, n_hidden+1):
+            new_node = caddLayer()
+            self.G.add_edge(before, new_node)
+            self.G.add_edge(inputLayer(i), new_node)
+            before = new_node
         for i in range(n_hidden+1):
-            self.G.add_edge(inputLayer(i), outputLayer(i))
+            self.G.add_edge(before, outputLayer(i))
 
     def autoRollback(fn):
         '''
@@ -178,8 +185,10 @@ return cell
             for node in self.G.nodes():
                 if isinstance(node, reluLayer) \
                         and isinstance(self.G.predecessors(node)[0], reluLayer) \
+                        and self.G.out_degree(self.G.predecessors(node)[0]) == 1 \
                         or isinstance(node, linearLayer) \
-                        and isinstance(self.G.predecessors(node)[0], linearLayer):
+                        and isinstance(self.G.predecessors(node)[0], linearLayer) \
+                        and self.G.out_degree(self.G.predecessors(node)[0]) == 1 :
                     print('simplify remove')
                     print(node)
                     self.G.add_edge(self.G.predecessors(node)[0], self.G.successors(node)[0])

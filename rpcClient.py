@@ -24,14 +24,15 @@ def rpcWorker(url, gpuid):
         except:
             continue
         try:
-            val_max = {'CIDEr': -1}
-            nid, lua_code = ret['id'], ret['lua']
+            val_max = {'CIDEr': -0.01}
+            nid, lua_code, num_rnn = ret['id'], ret['lua'], ret['n_hidden']
             print('nid', nid)
             with open('cell.lua', 'w') as fd:
                 fd.write(lua_code)
 
             os.system('rm model_.json')
-            os.system('CUDA_VISIBLE_DEVICES=%d th train.lua' % gpuid)
+            os.system('CUDA_VISIBLE_DEVICES=%d th train.lua -num_rnn %d' %
+                      (gpuid, num_rnn))
 
             with open('model_.json') as fd:
                 data = json.load(fd)
@@ -39,13 +40,17 @@ def rpcWorker(url, gpuid):
             val_data = data["val_lang_stats_history"]
             val_data = sorted(val_data.items(), key=lambda t: int(t[0]))
 
-            max_result = -1
+            max_result = -0.01
             for k, v in val_data:
                 if v['CIDEr'] > max_result:
                     max_result = v['CIDEr']
                     for metric in v:
                         val_max[metric] = v[metric]
                     val_max['pos_max'] = k
+        except FileNotFoundError:
+            val_max = {'CIDEr': -0.01}
+        except KeyError:
+            val_max = {'CIDEr': -0.01}
         except KeyboardInterrupt:
             if flag:
                 print('return next loop')

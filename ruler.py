@@ -213,7 +213,7 @@ class rpcFileSystemRuler:
             pickle.dump(net, fd)
         lua_code = net.getLua()
 
-        return {'id': nid, 'lua': lua_code}
+        return {'id': nid, 'lua': lua_code, 'n_hidden': self.n_hidden}
 
     def fight(self, nid, metric):
         print('rpc ret:', nid, metric)
