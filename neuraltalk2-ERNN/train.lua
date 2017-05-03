@@ -10,6 +10,7 @@ require 'misc.LanguageModel'
 local net_utils = require 'misc.net_utils'
 require 'misc.optim_updates'
 local threads = require 'threads'
+threads.serialization('threads.sharedserialize')
 
 -------------------------------------------------------------------------------
 -- Input arguments and options
