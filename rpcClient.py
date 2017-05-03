@@ -35,7 +35,7 @@ def rpcWorker(url, gpuid):
                 fd.write(lua_code)
 
             os.system('rm model_.json')
-            cmd = 'CUDA_VISIBLE_DEVICES=%d th train.lua' % gpuid
+            cmd = 'CUDA_VISIBLE_DEVICES=%d th train.lua ' % gpuid
             cmd = cmd + ' '.join(['-%s %s' % (k, args[k]) for k in args])
             os.system(cmd)
 
