@@ -212,8 +212,10 @@ class rpcFileSystemRuler:
         with open(os.path.join(npath, 'cell.pickle'), 'wb') as fd:
             pickle.dump(net, fd)
         lua_code = net.getLua()
+        max_iters = int(int(nid) / 2 + 2500)
 
-        return {'id': nid, 'lua': lua_code, 'n_hidden': self.n_hidden}
+        return {'id': nid, 'lua': lua_code, 'task': 'neuraltalk2-ERNN',
+                'args': {'num_rnn': self.n_hidden, 'max_iters': max_iters}}
 
     def fight(self, nid, metric):
         print('rpc ret:', nid, metric)

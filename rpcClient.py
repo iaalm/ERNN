@@ -14,8 +14,9 @@ args = parser.parse_args()
 
 def rpcWorker(url, gpuid):
     s = xmlrpc.client.ServerProxy(url)
-    if not os.path.exists('work_%d' % gpuid):
-        os.system('cp -lr neuraltalk2-ERNN work_%d' % gpuid)
+    if os.path.exists('work_%d' % gpuid):
+        os.system('rm -rf work_%d' % gpuid)
+    os.system('cp -lr neuraltalk2-ERNN work_%d' % gpuid)
     os.chdir('work_%d' % gpuid)
     flag = True
     while(flag):
@@ -25,14 +26,18 @@ def rpcWorker(url, gpuid):
             continue
         try:
             val_max = {'CIDEr': -0.01}
-            nid, lua_code, num_rnn = ret['id'], ret['lua'], ret['n_hidden']
+            nid = ret['id']
+            lua_code = ret['lua']
+            args = ret['args']
+
             print('nid', nid)
             with open('cell.lua', 'w') as fd:
                 fd.write(lua_code)
 
             os.system('rm model_.json')
-            os.system('CUDA_VISIBLE_DEVICES=%d th train.lua -num_rnn %d' %
-                      (gpuid, num_rnn))
+            cmd = 'CUDA_VISIBLE_DEVICES=%d th train.lua' % gpuid
+            cmd = cmd + ' '.join(['-%s %s' % (k, args[k]) for k in args])
+            os.system(cmd)
 
             with open('model_.json') as fd:
                 data = json.load(fd)
