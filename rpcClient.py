@@ -18,6 +18,8 @@ def rpcWorker(url, gpuid):
         os.system('rm -rf work_%d' % gpuid)
     os.system('cp -lr neuraltalk2-ERNN work_%d' % gpuid)
     os.chdir('work_%d' % gpuid)
+    os.system('rm coco_caption/lock')
+    os.system('rm coco_caption/*.json')
     flag = True
     while(flag):
         try:
