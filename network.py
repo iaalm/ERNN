@@ -96,11 +96,11 @@ return cell
         remove too many inputs or add too less inputs
         '''
         while node.n_input > len(self.G.predecessors(node)):
-            print('fitNode add')
+            # print('fitNode add')
             cand = self.randomNode(node, withInput=True)
             self.G.add_edge(cand, node)
         while node.n_input < len(self.G.predecessors(node)):
-            print('fitNode remove')
+            # print('fitNode remove')
             cand = random.choice(self.G.predecessors(node))
             self.G.remove_edge(cand, node)
 
@@ -109,9 +109,9 @@ return cell
         add a node between two node of edge
         if node has more than one inputs and random inputs is added
         '''
-        print('addNodeOnEdge')
-        print(node)
-        print(edge)
+        # print('addNodeOnEdge')
+        # print(node)
+        # print(edge)
         f = edge[0]
         t = edge[1]
         self.G.add_edge(f, node)
@@ -125,8 +125,8 @@ return cell
         remove a node from G
         connnect all edge to it to its sucessor
         '''
-        print('remove')
-        print(node)
+        # print('remove')
+        # print(node)
         succ = self.G.successors(node)
         pre = self.G.predecessors(node)
         self.G.remove_node(node)
@@ -139,8 +139,8 @@ return cell
         '''
         change connection of a node
         '''
-        print('change')
-        print(node)
+        # print('change')
+        # print(node)
         # connected_double_edge_swap(self.G)
         pre = self.G.predecessors(node)
         self.G.remove_edge(random.choice(pre), node)
@@ -151,9 +151,9 @@ return cell
         '''
         replace a node with a new one
         '''
-        print('replace')
-        print(node)
-        print(nnode)
+        # print('replace')
+        # print(node)
+        # print(nnode)
         succ = self.G.successors(node)
         pre = self.G.predecessors(node)
         self.G.remove_node(node)
@@ -189,8 +189,8 @@ return cell
                         or isinstance(node, linearLayer) \
                         and isinstance(self.G.predecessors(node)[0], linearLayer) \
                         and self.G.out_degree(self.G.predecessors(node)[0]) == 1 :
-                    print('simplify remove')
-                    print(node)
+                    # print('simplify remove')
+                    # print(node)
                     self.G.add_edge(self.G.predecessors(node)[0], self.G.successors(node)[0])
                     self.G.remove_node(node)
                     break

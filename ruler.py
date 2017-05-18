@@ -8,6 +8,18 @@ from matplotlib import pyplot as plt
 from network import network, NotPossibleError
 from layer import *
 from xmlrpc.server import SimpleXMLRPCServer
+from functools import partial
+from termcolor import colored
+from multiprocessing import Pool
+
+
+def get_score(path, name):
+    with open(os.path.join(path, name, 'cell.lua')) as fd:
+        try:
+            score = float(fd.readline().split(' ')[1].strip())
+        except ValueError:
+            score = -0.01
+    return (name, score)
 
 
 class simpleFileSystemRuler:
@@ -169,11 +181,13 @@ class simpleFileSystemRuler:
         net.simplify()
         return net
 
+
 class rpcFileSystemRuler:
     def __init__(self, workdir, n_live, n_hidden):
         self.workdir = workdir
         self.n_hidden = n_hidden
 
+        self.pool = Pool(16)
         dirs = os.listdir(workdir)
         for i in ['live', 'dead', 'born']:
             if i not in dirs:
@@ -200,25 +214,28 @@ class rpcFileSystemRuler:
         live_path = os.path.join(self.workdir, 'live')
         cands = os.listdir(os.path.join(live_path))
         cand = random.choice(cands)
-        print('------born net from ' + cand)
+        print(colored("="*30, 'blue'))
+        print('born net from ' + cand)
         pickle_path = os.path.join(live_path, cand, 'cell.pickle')
         with open(pickle_path, 'rb') as fd:
             net = pickle.load(fd)
         net = self.mutate(net)
         nid = self.newId()
-        print('------new id ', nid)
+        print('new id ', colored(nid, 'cyan'))
         npath = os.path.join(self.workdir, 'born', nid)
         os.mkdir(npath)
         with open(os.path.join(npath, 'cell.pickle'), 'wb') as fd:
             pickle.dump(net, fd)
         lua_code = net.getLua()
-        max_iters = int(int(nid) / 2 + 2500)
+        max_iters = int(int(nid) + 2500)
 
         return {'id': nid, 'lua': lua_code, 'task': 'neuraltalk2-ERNN',
                 'args': {'num_rnn': self.n_hidden, 'max_iters': max_iters}}
 
     def fight(self, nid, metric):
-        print('rpc ret:', nid, metric)
+        print(colored("="*30, 'yellow'))
+        print('rpc ret:', nid)
+        print(colored(metric, 'magenta'))
         path = os.path.join(self.workdir, 'born', nid)
         with open(os.path.join(path, 'cell.pickle'), 'rb') as fd:
             net = pickle.load(fd)
@@ -229,25 +246,29 @@ class rpcFileSystemRuler:
         with open(os.path.join(path, 'cell.lua'), 'w') as fd:
             print('-- %f' % max_result, file=fd)
             print('--[', file=fd)
-            print(metric)
+            print(metric, file=fd)
             print('--]', file=fd)
             fd.write(net.getLua())
         live_path = os.path.join(self.workdir, 'live')
-        p = random.choice(os.listdir(live_path))
-        min_path = os.path.join(live_path, p)
-        with open(os.path.join(min_path, 'cell.lua')) as fd:
-            try:
-                min_live = float(fd.readline().split(' ')[1].strip())
-            except ValueError:
-                min_live = -0.01
-        if min_live <= max_result:
-            print('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
+
+        id_path = os.listdir(live_path)
+        scores = self.pool.imap_unordered(partial(get_score, live_path), id_path)
+        scores = sorted(scores, key=lambda x: x[1])
+        bad_part = scores[:int(len(scores)/2)]
+        p = random.choice(bad_part)
+        print('fight with: ', p)
+        min_path = os.path.join(live_path, p[0])
+        min_live = p[1]
+        if min_live < max_result:
+            # print('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
+            print(colored('win', 'green'))
             os.system('mv %s %s' %
                       (min_path, os.path.join(self.workdir, 'dead')))
-            print('mv %s %s' % (path, live_path))
+            # print('mv %s %s' % (path, live_path))
             os.system('mv %s %s' % (path, live_path))
         else:
-            print('rm -rf %s' % path)
+            print(colored('lose', 'red'))
+            # print('rm -rf %s' % path)
             os.system('rm -rf %s' % path)
         return True
 
@@ -283,23 +304,23 @@ class rpcFileSystemRuler:
                     # replace
                     node = net.randomNode(None)
                     if not net.replaceNode(node, randomLayer()):
-                        print('mutate fail')
+                        # print('mutate fail')
                         made = made - 1
                 elif mutate_weight[1] <= rv < mutate_weight[2]:
                     # change connect
                     node = net.randomNode(None, withOutput=True)
                     if not net.changeNodeConnect(node):
-                        print('mutate fail')
+                        # print('mutate fail')
                         made = made - 1
                 else:
                     # remove
                     node = net.randomNode(None)
                     if not net.removeNode(node):
-                        print('mutate fail')
+                        # print('mutate fail')
                         made = made - 1
                 made = made + 1
             except NotPossibleError:
-                print('not possible mutate random')
+                # print('not possible mutate random')
                 continue
         net.simplify()
         return net
