@@ -21,24 +21,27 @@ def getResult(path):
             performance = float(performance)
             if performance < 0:
                 return
-            return ((int(i), performance))
+            return ((int(i), performance, sub))
         except:
             pass
 
 
 dirs = [('live', i) for i in os.listdir(os.path.join(args.dir, 'live'))] + \
     [('dead', i) for i in os.listdir(os.path.join(args.dir, 'dead'))]
+c = {'live': 'b.', 'dead': 'r.'}
 
 pool = multiprocessing.Pool(16)
 result = [i for i in pool.imap_unordered(getResult, dirs) if i]
 pool.close()
 pool.join()
 result = sorted(result, key=lambda x: x[0])
-print(max([i[1] for i in result]))
+# print(max([i[1] for i in result]))
 print(sorted(result, key=lambda x: x[1])[-1])
 
-plt.plot([i[1] for i in result], '.')
+for ix, data in enumerate(result):
+    plt.plot(ix, data[1], c[data[2]])
 plt.show()
 
-plt.plot([i[0] for i in result], [i[1] for i in result])
+for data in result:
+    plt.plot(data[0], data[1], c[data[2]])
 plt.show()
