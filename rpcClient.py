@@ -55,8 +55,10 @@ def rpcWorker(url, gpuid):
                         val_max[metric] = v[metric]
                     val_max['pos_max'] = k
         except FileNotFoundError:
+            print('FileNotFoundError')
             val_max = {'CIDEr': -0.01}
         except KeyError:
+            print('KeyError')
             val_max = {'CIDEr': -0.01}
         except KeyboardInterrupt:
             if flag:
