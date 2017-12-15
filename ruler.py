@@ -227,7 +227,7 @@ class rpcFileSystemRuler:
         with open(os.path.join(npath, 'cell.pickle'), 'wb') as fd:
             pickle.dump(net, fd)
         lua_code = net.getLua()
-        max_iters = int(int(nid) + 2500)
+        max_iters = min(int(int(nid) + 2500), 1e5)
 
         return {'id': nid, 'lua': lua_code, 'task': 'neuraltalk2-ERNN',
                 'args': {'num_rnn': self.n_hidden, 'max_iters': max_iters}}
@@ -245,9 +245,9 @@ class rpcFileSystemRuler:
         max_result = metric['CIDEr']
         with open(os.path.join(path, 'cell.lua'), 'w') as fd:
             print('-- %f' % max_result, file=fd)
-            print('--[', file=fd)
+            print('--[[', file=fd)
             print(metric, file=fd)
-            print('--]', file=fd)
+            print('--]]', file=fd)
             fd.write(net.getLua())
         live_path = os.path.join(self.workdir, 'live')
 
@@ -274,13 +274,18 @@ class rpcFileSystemRuler:
 
     def mutate(self, net):
         def randomLayer():
-            layers = ((linearLayer, 1),
-                      (reluLayer, 2),
-                      (dropoutLayer, 2),
+            layers = ((linearLayer, 0.5),
+                      (reluLayer, 1),
+                      (dropoutLayer, 1),
                       (sigmoidLayer, 1),
+                      (add01Layer, 1),
+                      (mul11Layer, 1),
+                      (mul09Layer, 1),
+                      (muln1Layer, 1),
                       (tanhLayer, 1),
                       (caddLayer, 2),
-                      (cmulLayer, 1.5))
+                      (cmulLayer, 2)
+                      (batchnormalizationLayer, 1))
             count = sum([i[1] for i in layers])
             rv = random.random() * count
             current_sum = 0
@@ -289,7 +294,7 @@ class rpcFileSystemRuler:
                 if current_sum > rv:
                     return i[0]()
 
-        mutate_weight = [5, 7, 12, 13]
+        mutate_weight = [3, 7, 12, 14]
 
         made = 0
         changes = 1 + int(random.expovariate(1))

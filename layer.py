@@ -55,10 +55,23 @@ class linearLayer:
         return self.template % (node_id, inputs[0])
 
 
+class batchnormalizationLayer:
+    n_input = 1
+    template = '''  -- reluLayer
+  node%d = nn.BatchNormalization(512)(node%d)
+'''
+
+    def __str__(self):
+        return 'batchnomalizationLayer'
+
+    def genLua(self, node_id, inputs):
+        assert len(inputs) == 1, 'batchnormalization layer %d / 1' % len(inputs)
+        return self.template % (node_id, inputs[0])
+
 class dropoutLayer:
     n_input = 1
     template = '''  -- reluLayer
-  node%d = nn.Dropout(0.5)(node%d)
+  node%d = nn.Dropout(0.1)(node%d)
 '''
 
     def __str__(self):
@@ -108,6 +121,62 @@ class reluLayer:
 
     def genLua(self, node_id, inputs):
         assert len(inputs) == 1, 'relu layer %d / 1' % len(inputs)
+        return self.template % (node_id, inputs[0])
+
+
+class add01Layer:
+    n_input = 1
+    template = '''  -- add01layer
+  node%d = nn.AddConstant(0.1, true)(node%d)
+'''
+
+    def __str__(self):
+        return 'add01layer'
+
+    def genLua(self, node_id, inputs):
+        assert len(inputs) == 1, 'add01 layer %d / 1' % len(inputs)
+        return self.template % (node_id, inputs[0])
+
+
+class mul09Layer:
+    n_input = 1
+    template = '''  -- mul09layer
+  node%d = nn.MulConstant(0.9, true)(node%d)
+'''
+
+    def __str__(self):
+        return 'mul09layer'
+
+    def genLua(self, node_id, inputs):
+        assert len(inputs) == 1, 'mul09 layer %d / 1' % len(inputs)
+        return self.template % (node_id, inputs[0])
+
+
+class mul11Layer:
+    n_input = 1
+    template = '''  -- mul1layer
+  node%d = nn.MulConstant(1.1, true)(node%d)
+'''
+
+    def __str__(self):
+        return 'mul11layer'
+
+    def genLua(self, node_id, inputs):
+        assert len(inputs) == 1, 'mul11 layer %d / 1' % len(inputs)
+        return self.template % (node_id, inputs[0])
+
+
+class muln1Layer:
+    n_input = 1
+    template = '''  -- muln1layer
+  node%d = nn.MulConstant(-1, true)(node%d)
+'''
+
+    def __str__(self):
+        return 'muln1layer'
+
+    def genLua(self, node_id, inputs):
+        assert len(inputs) == 1, 'muln1 layer %d / 1' % len(inputs)
         return self.template % (node_id, inputs[0])
 
 
