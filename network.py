@@ -71,7 +71,7 @@ return cell
 
     def getLua(self):
         result = ''
-        nodes = topological_sort(self.G)
+        nodes = list(topological_sort(self.G))
         node_ix = {node: ix for ix, node in enumerate(nodes)}
         # write to file
         for ix, node in enumerate(nodes):
