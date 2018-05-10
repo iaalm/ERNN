@@ -4,6 +4,9 @@ from networkx.algorithms.dag import topological_sort
 from networkx.algorithms.shortest_paths.generic import has_path
 from networkx.algorithms.swap import connected_double_edge_swap
 from layer import *
+import logging
+
+logger = logging.getLogger(__name__)
 
 class NotPossibleError(Exception):
     pass
@@ -80,9 +83,9 @@ return cell
         '''
         get a random node which can be a predecessor of node
         '''
-        node = random.choice(self.G.nodes())
+        node = random.choice(list(self.G.nodes()))
         for _ in range(10):
-            node = random.choice(self.G.nodes())
+            node = random.choice(list(self.G.nodes()))
             if node != source_node \
                     and (withInput or not isinstance(node, inputLayer)) \
                     and (withOutput or not isinstance(node, outputLayer)) \
@@ -95,13 +98,13 @@ return cell
         '''
         remove too many inputs or add too less inputs
         '''
-        while node.n_input > len(self.G.predecessors(node)):
-            # print('fitNode add')
+        while node.n_input > len(list(self.G.predecessors(node))):
+            logger.info('fitNode add')
             cand = self.randomNode(node, withInput=True)
             self.G.add_edge(cand, node)
-        while node.n_input < len(self.G.predecessors(node)):
-            # print('fitNode remove')
-            cand = random.choice(self.G.predecessors(node))
+        while node.n_input < len(list(self.G.predecessors(node))):
+            logger.info('fitNode remove')
+            cand = random.choice(list(self.G.predecessors(node)))
             self.G.remove_edge(cand, node)
 
     def addNodeOnEdge(self, node, edge):
@@ -109,9 +112,9 @@ return cell
         add a node between two node of edge
         if node has more than one inputs and random inputs is added
         '''
-        # print('addNodeOnEdge')
-        # print(node)
-        # print(edge)
+        logger.info('addNodeOnEdge')
+        logger.info(node)
+        logger.info(edge)
         f = edge[0]
         t = edge[1]
         self.G.add_edge(f, node)
@@ -125,10 +128,10 @@ return cell
         remove a node from G
         connnect all edge to it to its sucessor
         '''
-        # print('remove')
-        # print(node)
-        succ = self.G.successors(node)
-        pre = self.G.predecessors(node)
+        logger.info('remove')
+        logger.info(node)
+        succ = list(self.G.successors(node))
+        pre = list(self.G.predecessors(node))
         self.G.remove_node(node)
         for i in succ:
             self.G.add_edge(random.choice(pre), i)
@@ -139,10 +142,10 @@ return cell
         '''
         change connection of a node
         '''
-        # print('change')
-        # print(node)
+        logger.info('change')
+        logger.info(node)
         # connected_double_edge_swap(self.G)
-        pre = self.G.predecessors(node)
+        pre = list(self.G.predecessors(node))
         self.G.remove_edge(random.choice(pre), node)
         self.fitNode(node)
 
@@ -151,9 +154,9 @@ return cell
         '''
         replace a node with a new one
         '''
-        # print('replace')
-        # print(node)
-        # print(nnode)
+        logger.info('replace')
+        logger.info(node)
+        logger.info(nnode)
         succ = self.G.successors(node)
         pre = self.G.predecessors(node)
         self.G.remove_node(node)
@@ -189,8 +192,8 @@ return cell
                         or isinstance(node, linearLayer) \
                         and isinstance(self.G.predecessors(node)[0], linearLayer) \
                         and self.G.out_degree(self.G.predecessors(node)[0]) == 1 :
-                    # print('simplify remove')
-                    # print(node)
+                    logger.info('simplify remove')
+                    logger.debug(str(node))
                     self.G.add_edge(self.G.predecessors(node)[0], self.G.successors(node)[0])
                     self.G.remove_node(node)
                     break

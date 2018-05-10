@@ -11,6 +11,9 @@ from xmlrpc.server import SimpleXMLRPCServer
 from functools import partial
 from termcolor import colored
 from multiprocessing import Pool
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_score(path, name):
@@ -184,6 +187,11 @@ class simpleFileSystemRuler:
 
 class rpcFileSystemRuler:
     def __init__(self, workdir, n_live, n_hidden):
+        # setup logger
+        fh = logging.FileHandler(os.path.join(workdir, 'log'))
+        fh.setLevel(logging.INFO)
+        logger.addHandler(fh)
+
         self.workdir = workdir
         self.n_hidden = n_hidden
 
@@ -214,16 +222,16 @@ class rpcFileSystemRuler:
         live_path = os.path.join(self.workdir, 'live')
         cands = os.listdir(os.path.join(live_path))
         cand = random.choice(cands)
-        print(colored("="*30, 'blue'))
-        print('born net from ' + cand)
         pickle_path = os.path.join(live_path, cand, 'cell.pickle')
         with open(pickle_path, 'rb') as fd:
             net = pickle.load(fd)
         net = self.mutate(net)
         nid = self.newId()
-        print('new id ', colored(nid, 'cyan'))
+        logger.warning('born net from ' + cand + ' to '+ str(nid))
         npath = os.path.join(self.workdir, 'born', nid)
         os.mkdir(npath)
+        with open(os.path.join(npath, 'from'), 'w') as fd:
+            print(str(cand), file=fd)
         with open(os.path.join(npath, 'cell.pickle'), 'wb') as fd:
             pickle.dump(net, fd)
         lua_code = net.getLua()
@@ -233,9 +241,7 @@ class rpcFileSystemRuler:
                 'args': {'num_rnn': self.n_hidden, 'max_iters': max_iters}}
 
     def fight(self, nid, metric):
-        print(colored("="*30, 'yellow'))
-        print('rpc ret:', nid)
-        print(colored(metric, 'magenta'))
+        logger.warning('rpc ret:' + str(nid) + " -> " + str(metric))
         path = os.path.join(self.workdir, 'born', nid)
         with open(os.path.join(path, 'cell.pickle'), 'rb') as fd:
             net = pickle.load(fd)
@@ -256,19 +262,19 @@ class rpcFileSystemRuler:
         scores = sorted(scores, key=lambda x: x[1])
         bad_part = scores[:int(len(scores)/2)]
         p = random.choice(bad_part)
-        print('fight with: ', p)
+        logger.info('fight with: ', p)
         min_path = os.path.join(live_path, p[0])
         min_live = p[1]
         if min_live < max_result:
-            # print('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
-            print(colored('win', 'green'))
+            logger.debug('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
+            logger.warning('win')
             os.system('mv %s %s' %
                       (min_path, os.path.join(self.workdir, 'dead')))
-            # print('mv %s %s' % (path, live_path))
+            logger.debug('mv %s %s' % (path, live_path))
             os.system('mv %s %s' % (path, live_path))
         else:
-            print(colored('lose', 'red'))
-            # print('rm -rf %s' % path)
+            logger.warning('lose')
+            logger.debug('rm -rf %s' % path)
             os.system('rm -rf %s' % path)
         return True
 
@@ -278,14 +284,15 @@ class rpcFileSystemRuler:
                       (reluLayer, 1),
                       (dropoutLayer, 1),
                       (sigmoidLayer, 1),
-                      (add01Layer, 1),
-                      (mul11Layer, 1),
-                      (mul09Layer, 1),
-                      (muln1Layer, 1),
+                      # (add01Layer, 1),
+                      # (mul11Layer, 1),
+                      # (mul09Layer, 1),
+                      # (muln1Layer, 1),
                       (tanhLayer, 1),
                       (caddLayer, 2),
-                      (cmulLayer, 2)
-                      (batchnormalizationLayer, 1))
+                      (cmulLayer, 2),
+                      # (batchnormalizationLayer, 1),
+                      )
             count = sum([i[1] for i in layers])
             rv = random.random() * count
             current_sum = 0
@@ -298,6 +305,7 @@ class rpcFileSystemRuler:
 
         made = 0
         changes = 1 + int(random.expovariate(1))
+        logger.info('changes: '+ str(changes))
         while made < changes:
             try:
                 rv = random.randrange(mutate_weight[-1])
@@ -309,31 +317,33 @@ class rpcFileSystemRuler:
                     # replace
                     node = net.randomNode(None)
                     if not net.replaceNode(node, randomLayer()):
-                        # print('mutate fail')
+                        logger.info('mutate (replace) fail')
                         made = made - 1
                 elif mutate_weight[1] <= rv < mutate_weight[2]:
                     # change connect
                     node = net.randomNode(None, withOutput=True)
                     if not net.changeNodeConnect(node):
-                        # print('mutate fail')
+                        logger.info('mutate (change) fail')
                         made = made - 1
                 else:
                     # remove
                     node = net.randomNode(None)
                     if not net.removeNode(node):
-                        # print('mutate fail')
+                        logger.info('mutate (remove) fail')
                         made = made - 1
                 made = made + 1
             except NotPossibleError:
-                # print('not possible mutate random')
+                logger.warning('not possible mutate random')
                 continue
+            except:
+                logger.fatel('ERR!')
         net.simplify()
         return net
 
     def listen(self, port):
-        print('listening at port:', port)
         server = SimpleXMLRPCServer(("0.0.0.0", port))
         server.register_function(self.born, 'born')
         server.register_function(self.fight, 'fight')
+        logger.warning('listening at port:'+ str(port))
 
         server.serve_forever()
