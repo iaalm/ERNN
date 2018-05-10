@@ -241,7 +241,6 @@ class rpcFileSystemRuler:
                 'args': {'num_rnn': self.n_hidden, 'max_iters': max_iters}}
 
     def fight(self, nid, metric):
-        logger.warning('rpc ret:' + str(nid) + " -> " + str(metric))
         path = os.path.join(self.workdir, 'born', nid)
         with open(os.path.join(path, 'cell.pickle'), 'rb') as fd:
             net = pickle.load(fd)
@@ -262,7 +261,9 @@ class rpcFileSystemRuler:
         scores = sorted(scores, key=lambda x: x[1])
         bad_part = scores[:int(len(scores)/2)]
         p = random.choice(bad_part)
-        logger.info('fight with: ', p)
+        logger.warning('rpc ret: {} -> {} against {} ({})'
+                       .format(nid, metric, p[0], p[1]))
+
         min_path = os.path.join(live_path, p[0])
         min_live = p[1]
         if min_live < max_result:
