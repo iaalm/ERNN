@@ -12,9 +12,14 @@ from functools import partial
 from termcolor import colored
 from multiprocessing import Pool
 import logging
+import subprocess
 
 logger = logging.getLogger(__name__)
 
+
+def cmd_output(cmd):
+    return subprocess.Popen( ["bash", "-c", cmd],
+            stdout=subprocess.PIPE).stdout.read().decode('utf-8').strip()
 
 def get_score(path, name):
     with open(os.path.join(path, name, 'cell.lua')) as fd:
@@ -191,6 +196,17 @@ class rpcFileSystemRuler:
         fh = logging.FileHandler(os.path.join(workdir, 'log'))
         fh.setLevel(logging.INFO)
         logger.addHandler(fh)
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.ERROR)
+        # create formatter and add it to the handlers
+        formatter = logging.Formatter('%(asctime)s [%(name)s %(levelname)s] %(message)s')
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
+
+        code_hash = cmd_output("git log -n 1 | head -n 1| awk '{print $2}'")
+        logger.error('Code Hash: {}'.format(code_hash))
+        mfile = cmd_output( "git status --short -uno")
+        logger.error(mfile)
 
         self.workdir = workdir
         self.n_hidden = n_hidden
@@ -227,6 +243,7 @@ class rpcFileSystemRuler:
             net = pickle.load(fd)
         net = self.mutate(net)
         nid = self.newId()
+        net.parent_path.append(nid)
         logger.warning('born net from ' + cand + ' to '+ str(nid))
         npath = os.path.join(self.workdir, 'born', nid)
         os.mkdir(npath)
