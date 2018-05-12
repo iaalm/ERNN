@@ -1,4 +1,5 @@
 import os
+import math
 import json
 import random
 import pickle
@@ -276,7 +277,7 @@ class rpcFileSystemRuler:
         id_path = os.listdir(live_path)
         scores = self.pool.imap_unordered(partial(get_score, live_path), id_path)
         scores = sorted(scores, key=lambda x: x[1])
-        bad_part = scores[:int(len(scores)/2)]
+        bad_part = scores[math.ceil(len(scores)/2)]
         p = random.choice(bad_part)
         logger.warning('rpc ret: {} -> {} against {} ({})'
                        .format(nid, metric, p[0], p[1]))
