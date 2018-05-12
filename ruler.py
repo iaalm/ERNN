@@ -193,7 +193,7 @@ class simpleFileSystemRuler:
 class rpcFileSystemRuler:
     def __init__(self, workdir, n_live, n_hidden):
         # setup logger
-        fh = logging.FileHandler(os.path.join(workdir, 'log'))
+        fh = logging.FileHandler(os.path.join(workdir, 'log'), 'a')
         fh.setLevel(logging.INFO)
         logger.addHandler(fh)
         ch = logging.StreamHandler()
