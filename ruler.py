@@ -205,7 +205,7 @@ class rpcFileSystemRuler:
 
         code_hash = cmd_output("git log -n 1 | head -n 1| awk '{print $2}'")
         logger.error('Code Hash: {}'.format(code_hash))
-        mfile = cmd_output( "git status --short -uno")
+        mfile = cmd_output( "git diff")
         logger.error(mfile)
 
         self.workdir = workdir
