@@ -4,13 +4,10 @@ import json
 import random
 import pickle
 import fcntl
-import networkx as nx
-from matplotlib import pyplot as plt
 from network import network, NotPossibleError
 from layer import *
 from xmlrpc.server import SimpleXMLRPCServer
 from functools import partial
-from termcolor import colored
 from multiprocessing import Pool
 import logging
 import subprocess
@@ -19,8 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 def cmd_output(cmd):
-    return subprocess.Popen( ["bash", "-c", cmd],
-            stdout=subprocess.PIPE).stdout.read().decode('utf-8').strip()
+    return subprocess.Popen(["bash", "-c", cmd], stdout=subprocess.PIPE)\
+        .stdout.read().decode('utf-8').strip()
+
 
 def get_score(path, name):
     with open(os.path.join(path, name, 'cell.lua')) as fd:
@@ -126,7 +124,8 @@ class simpleFileSystemRuler:
         min_path = mpath
         if min_live <= max_result:
             print('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
-            os.system('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
+            os.system('mv %s %s' %
+                      (min_path, os.path.join(self.workdir, 'dead')))
             print('rm -rf %s' % os.path.join(path, 'code'))
             os.system('rm -rf %s' % os.path.join(path, 'code'))
             print('mv %s %s' % (path, live_path))
@@ -200,13 +199,14 @@ class rpcFileSystemRuler:
         ch = logging.StreamHandler()
         ch.setLevel(logging.ERROR)
         # create formatter and add it to the handlers
-        formatter = logging.Formatter('%(asctime)s [%(name)s %(levelname)s] %(message)s')
+        formatter = logging.Formatter('%(asctime)s [%(name)s %(levelname)s]' +
+                                      ' %(message)s')
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 
         code_hash = cmd_output("git log -n 1 | head -n 1| awk '{print $2}'")
         logger.error('Code Hash: {}'.format(code_hash))
-        mfile = cmd_output( "git diff")
+        mfile = cmd_output("git diff")
         logger.error(mfile)
 
         self.workdir = workdir
@@ -245,7 +245,7 @@ class rpcFileSystemRuler:
         net = self.mutate(net)
         nid = self.newId()
         net.parent_path.append(nid)
-        logger.warning('born net from ' + cand + ' to '+ str(nid))
+        logger.warning('born net from ' + cand + ' to ' + str(nid))
         npath = os.path.join(self.workdir, 'born', nid)
         os.mkdir(npath)
         with open(os.path.join(npath, 'from'), 'w') as fd:
@@ -275,7 +275,8 @@ class rpcFileSystemRuler:
         live_path = os.path.join(self.workdir, 'live')
 
         id_path = os.listdir(live_path)
-        scores = self.pool.imap_unordered(partial(get_score, live_path), id_path)
+        scores = self.pool.imap_unordered(
+            partial(get_score, live_path), id_path)
         scores = sorted(scores, key=lambda x: x[1])
         bad_part = scores[math.ceil(len(scores)/2)]
         p = random.choice(bad_part)
@@ -285,7 +286,8 @@ class rpcFileSystemRuler:
         min_path = os.path.join(live_path, p[0])
         min_live = p[1]
         if min_live < max_result:
-            logger.debug('mv %s %s' % (min_path, os.path.join(self.workdir, 'dead')))
+            logger.debug('mv %s %s' %
+                         (min_path, os.path.join(self.workdir, 'dead')))
             logger.warning('win')
             os.system('mv %s %s' %
                       (min_path, os.path.join(self.workdir, 'dead')))
@@ -324,7 +326,7 @@ class rpcFileSystemRuler:
 
         made = 0
         changes = 1 + int(random.expovariate(1))
-        logger.info('changes: '+ str(changes))
+        logger.info('changes: ' + str(changes))
         while made < changes:
             try:
                 rv = random.randrange(mutate_weight[-1])
@@ -363,6 +365,6 @@ class rpcFileSystemRuler:
         server = SimpleXMLRPCServer(("0.0.0.0", port))
         server.register_function(self.born, 'born')
         server.register_function(self.fight, 'fight')
-        logger.warning('listening at port:'+ str(port))
+        logger.warning('listening at port: ' + str(port))
 
         server.serve_forever()
