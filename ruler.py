@@ -253,7 +253,7 @@ class rpcFileSystemRuler:
         with open(os.path.join(npath, 'cell.pickle'), 'wb') as fd:
             pickle.dump(net, fd)
         lua_code = net.getLua()
-        max_iters = min(int(int(nid) + 2500), 1e5)
+        max_iters = min(int(int(nid) / 4 + 2500), 1e5)
 
         return {'id': nid, 'lua': lua_code, 'task': 'neuraltalk2-ERNN',
                 'args': {'num_rnn': self.n_hidden, 'max_iters': max_iters}}
